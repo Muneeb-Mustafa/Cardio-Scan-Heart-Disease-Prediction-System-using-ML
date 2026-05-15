@@ -4,6 +4,10 @@ import pandas as pd
 import json
 from datetime import datetime
 from io import BytesIO
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -15,8 +19,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 app = Flask(__name__)
 
 # ── Load model & data ──────────────────────────────────────────────────────────
-data = pickle.load(open('./models/data.pkl', 'rb'))
-pipe = pickle.load(open('./models/model.pkl', 'rb'))
+data = pickle.load(open(os.path.join(BASE_DIR, 'models', 'data.pkl'), 'rb'))
+pipe = pickle.load(open(os.path.join(BASE_DIR, 'models', 'model.pkl'), 'rb'))
 
 # ── In-memory patient history (resets on restart) ─────────────────────────────
 patient_history = []
