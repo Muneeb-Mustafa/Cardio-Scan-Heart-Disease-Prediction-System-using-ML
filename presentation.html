@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardioScan — Project Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #0d1b2a;
+    --navy-mid:  #112236;
+    --navy-card: #16293d;
+    --navy-lt:   #1e3550;
+    --teal:      #00c4cc;
+    --teal-dim:  rgba(0,196,204,0.15);
+    --red:       #ff4757;
+    --green:     #2ed573;
+    --yellow:    #ffc107;
+    --purple:    #a78bfa;
+    --text-pri:  #e8f4fd;
+    --text-sec:  #8ba5c0;
+    --text-dim:  #4a6580;
+    --border:    rgba(255,255,255,0.07);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--navy);
+    color: var(--text-pri);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,196,204,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,196,204,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(13,27,42,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; font-weight: 700;
+    background: linear-gradient(135deg,#fff 0%,#00c4cc 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    white-space: nowrap;
+  }
+
+  .nav-brand svg { width: 28px; height: 28px; flex-shrink: 0; }
+
+  .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .nav-links a {
+    font-size: 0.75rem; font-weight: 500;
+    color: var(--text-sec); text-decoration: none;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .nav-links a:hover { color: var(--teal); border-color: var(--teal-dim); }
+
+  /* SECTIONS — no more min-height: 100vh causing giant blank gaps */
+  section {
+    position: relative; z-index: 1;
+    padding: 90px 10% 72px;
+  }
+
+  /* Hero keeps full-height treatment */
+  section.hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(0,196,204,0.04) 0%, transparent 100%);
+  }
+
+  section:nth-child(even) { background: rgba(255,255,255,0.012); }
+
+  /* HERO */
+  .hero-icon svg {
+    width: 80px; height: 80px;
+    filter: drop-shadow(0 0 20px rgba(0,196,204,0.6));
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, #ffffff 0%, #00c4cc 60%, #0077b6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .hero-tagline {
+    font-size: 1.1rem; color: var(--text-sec);
+    margin-bottom: 32px; letter-spacing: 0.5px;
+  }
+
+  .hero-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+
+  .badge {
+    font-size: 0.78rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .badge-teal   { background: var(--teal-dim); border: 1px solid rgba(0,196,204,0.35); color: var(--teal); }
+  .badge-green  { background: rgba(46,213,115,0.12); border: 1px solid rgba(46,213,115,0.35); color: var(--green); }
+  .badge-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.35); color: var(--purple); }
+  .badge-yellow { background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.35); color: var(--yellow); }
+
+  .hero-meta {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px; max-width: 700px; width: 100%;
+  }
+
+  .meta-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .meta-card .num   { font-size: 2rem; font-weight: 800; color: var(--teal); display: block; }
+  .meta-card .label { font-size: 0.75rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* SECTION HEADERS */
+  .sec-label {
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--teal); margin-bottom: 8px;
+  }
+
+  .sec-title {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 700; letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+
+  .sec-desc {
+    font-size: 1rem; color: var(--text-sec);
+    max-width: 600px; margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  /* CARDS GRID */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,196,204,0.25); transform: translateY(-2px); }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+  }
+
+  .icon-teal   { background: var(--teal-dim); }
+  .icon-green  { background: rgba(46,213,115,0.12); }
+  .icon-purple { background: rgba(167,139,250,0.12); }
+  .icon-yellow { background: rgba(255,193,7,0.12); }
+  .icon-red    { background: rgba(255,71,87,0.12); }
+
+  .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+  .card p  { font-size: 0.88rem; color: var(--text-sec); line-height: 1.6; }
+
+  /* FLOW */
+  .flow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .flow-step {
+    flex: 1;
+    min-width: 130px;
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .flow-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--teal-dim); border: 1px solid rgba(0,196,204,0.4);
+    color: var(--teal); font-size: 0.75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px;
+  }
+
+  .flow-step h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
+  .flow-step p  { font-size: 0.78rem; color: var(--text-sec); }
+
+  /* TWO-COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+
+  .two-col.reverse .col-text   { order: 2; }
+  .two-col.reverse .col-visual { order: 1; }
+
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .two-col.reverse .col-text,
+    .two-col.reverse .col-visual { order: unset; }
+    .flow { flex-direction: column; }
+    section { padding: 80px 6% 60px; }
+  }
+
+  /* TECH STACK chips */
+  .tech-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .tech-chip {
+    font-size: 0.8rem; font-weight: 500;
+    padding: 5px 12px; border-radius: 20px;
+    background: var(--navy-lt);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  /* ── TECH TABLE FIX ──────────────────────────────────────────────
+     The key change: td cells that hold chips use a flex chip-wrap div
+     so chips never overflow or overlap each other.
+  ─────────────────────────────────────────────────────────────────── */
+  .feat-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+  .feat-table th {
+    text-align: left; font-size: 0.72rem; font-weight: 600;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Fixed column widths so chips column has room */
+  .feat-table th:nth-child(1),
+  .feat-table td:nth-child(1) { width: 20%; }
+  .feat-table th:nth-child(2),
+  .feat-table td:nth-child(2) { width: 38%; }
+  .feat-table th:nth-child(3),
+  .feat-table td:nth-child(3) { width: 42%; }
+
+  .feat-table td {
+    padding: 14px 16px; font-size: 0.88rem; color: var(--text-sec);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+
+  /* Chips container inside td */
+  .chip-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .feat-table tr:last-child td { border-bottom: none; }
+  .feat-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .status-done   { color: var(--green); font-weight: 600; }
+  .status-next   { color: var(--teal); font-weight: 600; }
+  .status-future { color: var(--text-dim); }
+
+  /* RISK VISUAL */
+  .risk-demo {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px;
+    text-align: center;
+  }
+
+  .gauge-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 12px; }
+  .gauge-wrap svg { width: 100%; height: 100%; }
+  .gauge-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .gauge-num { font-size: 2rem; font-weight: 800; color: var(--red); }
+  .gauge-sub { font-size: 0.7rem; color: var(--text-sec); }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .metric-box {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+    text-align: center;
+  }
+  .metric-box .big   { font-size: 2.2rem; font-weight: 800; }
+  .metric-box .small { font-size: 0.75rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; }
+  .color-teal   { color: var(--teal); }
+  .color-green  { color: var(--green); }
+  .color-yellow { color: var(--yellow); }
+  .color-purple { color: var(--purple); }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 28px; display: flex; flex-direction: column; gap: 28px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 6px; top: 8px; bottom: 8px;
+    width: 2px; background: linear-gradient(180deg, var(--teal), rgba(0,196,204,0.1));
+    border-radius: 1px;
+  }
+  .tl-item   { position: relative; }
+  .tl-dot    {
+    position: absolute; left: -28px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--teal); border: 2px solid var(--navy);
+  }
+  .tl-title  { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+  .tl-desc   { font-size: 0.85rem; color: var(--text-sec); }
+
+  /* QUOTE */
+  .quote-box {
+    background: linear-gradient(135deg, rgba(0,196,204,0.08) 0%, rgba(0,119,182,0.06) 100%);
+    border: 1px solid rgba(0,196,204,0.2);
+    border-left: 4px solid var(--teal);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+    font-size: 1rem; color: var(--text-pri);
+    line-height: 1.7; font-style: italic;
+    margin: 24px 0;
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    background: linear-gradient(180deg, rgba(0,196,204,0.04) 0%, transparent 100%);
+    border-top: 1px solid var(--border);
+    padding: 60px 10%;
+    text-align: center;
+  }
+
+  footer h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
+  footer p  { color: var(--text-sec); font-size: 0.9rem; }
+  footer a  { color: var(--teal); text-decoration: none; }
+
+  /* PRINT */
+  @media print {
+    nav { display: none; }
+    section { page-break-after: always; }
+    body::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <svg viewBox="0 0 40 40" fill="none">
+      <path d="M20 35s-15-9-15-20a10 10 0 0 1 15-9A10 10 0 0 1 35 15c0 11-15 20-15 20z" fill="url(#ng)"/>
+      <polyline points="6,20 11,20 14,14 17,26 21,18 24,22 27,20 34,20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <defs><linearGradient id="ng" x1="5" y1="6" x2="35" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#00c4cc"/><stop offset="1" stop-color="#0077b6"/></linearGradient></defs>
+    </svg>
+    CardioScan
+  </div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#features">Features</a>
+    <a href="#technical">Technical</a>
+    <a href="#future">Future</a>
+    <a href="#impact">Impact</a>
+  </div>
+</nav>
+
+
+<!-- HERO -->
+<section class="hero" id="overview">
+  <div class="hero-icon">
+    <svg viewBox="0 0 40 40" fill="none">
+      <path d="M20 35s-15-9-15-20a10 10 0 0 1 15-9A10 10 0 0 1 35 15c0 11-15 20-15 20z" fill="url(#hg)"/>
+      <polyline points="6,20 11,20 14,14 17,26 21,18 24,22 27,20 34,20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <defs><linearGradient id="hg" x1="5" y1="6" x2="35" y2="35"><stop stop-color="#00c4cc"/><stop offset="1" stop-color="#0077b6"/></linearGradient></defs>
+    </svg>
+  </div>
+  <h1>CardioScan</h1>
+  <p class="hero-tagline">AI-Powered Heart Disease Prediction &amp; Cardiac Risk Assessment</p>
+  <div class="hero-badges">
+    <span class="badge badge-teal">Random Forest Classifier</span>
+    <span class="badge badge-green">88.5% Accuracy</span>
+    <span class="badge badge-purple">Flask Web App</span>
+    <span class="badge badge-yellow">PDF Report Export</span>
+  </div>
+  <div class="hero-meta">
+    <div class="meta-card">
+      <span class="num">88.5%</span>
+      <span class="label">Model Accuracy</span>
+    </div>
+    <div class="meta-card">
+      <span class="num">13</span>
+      <span class="label">Clinical Features</span>
+    </div>
+    <div class="meta-card">
+      <span class="num">303</span>
+      <span class="label">Training Records</span>
+    </div>
+    <div class="meta-card">
+      <span class="num">5</span>
+      <span class="label">Core Features Built</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- PROBLEM -->
+<section id="problem">
+  <p class="sec-label">01 — The Problem</p>
+  <h2 class="sec-title">Heart disease is the world's leading cause of death</h2>
+  <p class="sec-desc">Early detection dramatically improves outcomes, but diagnosis requires expensive tests, specialist visits, and weeks of waiting — resources many people lack.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon icon-red">❤️</div>
+      <h3>17.9 million deaths/year</h3>
+      <p>Cardiovascular disease kills more people globally than any other condition — accounting for 32% of all deaths worldwide.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-yellow">⏳</div>
+      <h3>Late diagnosis is fatal</h3>
+      <p>Most patients present to emergency care only after a cardiac event. Proactive, accessible risk screening could save millions of lives.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-teal">🏥</div>
+      <h3>Specialist access is limited</h3>
+      <p>Cardiologists are scarce and expensive. In developing countries, the ratio can be 1 specialist per 100,000 people.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-green">📊</div>
+      <h3>Data already exists</h3>
+      <p>Routine blood tests and ECGs capture all the features needed to predict cardiac risk — but the insight isn't being automatically extracted.</p>
+    </div>
+  </div>
+
+  <div class="quote-box" style="margin-top:40px;">
+    CardioScan bridges the gap between existing clinical data and actionable cardiac risk insight — making preliminary screening fast, free, and accessible.
+  </div>
+</section>
+
+
+<!-- SOLUTION -->
+<section id="solution">
+  <p class="sec-label">02 — The Solution</p>
+  <h2 class="sec-title">From patient data to risk assessment in seconds</h2>
+  <p class="sec-desc">CardioScan uses a trained Random Forest model to analyse 13 clinical indicators and deliver an instant, explainable cardiac risk score.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <h4>Input Data</h4>
+      <p>Patient enters 13 clinical values including age, ECG results, cholesterol, and BP</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <h4>Validation</h4>
+      <p>Live range checking flags abnormal values before submission</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <h4>ML Prediction</h4>
+      <p>Random Forest model evaluates all features simultaneously using ensemble decision trees</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <h4>Risk Score</h4>
+      <p>Probability score (0–100%) displayed with visual gauge and clinical alerts</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <h4>PDF Report</h4>
+      <p>Professional clinical report exported for sharing with physicians</p>
+    </div>
+  </div>
+
+  <div style="margin-top:40px;" class="two-col">
+    <div class="col-text">
+      <h3 style="font-size:1.3rem; margin-bottom:16px; font-weight:600;">Why Random Forest?</h3>
+      <p style="color:var(--text-sec); line-height:1.8; margin-bottom:12px;">
+        Random Forest is ideal for structured clinical data — it handles missing values gracefully, is resistant to overfitting on small datasets, and naturally outputs feature importance scores that make predictions <strong style="color:var(--text-pri);">explainable</strong> to healthcare professionals.
+      </p>
+      <p style="color:var(--text-sec); line-height:1.8;">
+        Grid search cross-validation was used to find optimal hyperparameters, achieving <span style="color:var(--teal); font-weight:600;">88.5% accuracy</span> on the UCI Heart Disease dataset.
+      </p>
+    </div>
+    <div class="col-visual">
+      <div style="background:var(--navy-card); border:1px solid var(--border); border-radius:14px; padding:24px;">
+        <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); margin-bottom:16px; font-weight:600;">Top risk factors (by importance)</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;">Major Vessels</span>
+              <span style="font-size:0.85rem;color:var(--teal);">18.2%</span>
+            </div>
+            <div style="height:6px;background:var(--navy-lt);border-radius:3px;overflow:hidden;">
+              <div style="width:100%;height:100%;background:var(--teal);border-radius:3px;opacity:0.9;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;">Thalassemia</span>
+              <span style="font-size:0.85rem;color:var(--teal);">17.8%</span>
+            </div>
+            <div style="height:6px;background:var(--navy-lt);border-radius:3px;overflow:hidden;">
+              <div style="width:98%;height:100%;background:var(--teal);border-radius:3px;opacity:0.8;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;">Chest Pain Type</span>
+              <span style="font-size:0.85rem;color:var(--teal);">14.1%</span>
+            </div>
+            <div style="height:6px;background:var(--navy-lt);border-radius:3px;overflow:hidden;">
+              <div style="width:77%;height:100%;background:var(--teal);border-radius:3px;opacity:0.7;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;">Max Heart Rate</span>
+              <span style="font-size:0.85rem;color:var(--teal);">12.9%</span>
+            </div>
+            <div style="height:6px;background:var(--navy-lt);border-radius:3px;overflow:hidden;">
+              <div style="width:71%;height:100%;background:var(--teal);border-radius:3px;opacity:0.6;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;">ST Depression</span>
+              <span style="font-size:0.85rem;color:var(--teal);">11.3%</span>
+            </div>
+            <div style="height:6px;background:var(--navy-lt);border-radius:3px;overflow:hidden;">
+              <div style="width:62%;height:100%;background:var(--teal);border-radius:3px;opacity:0.5;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FEATURES -->
+<section id="features">
+  <p class="sec-label">03 — Features Built</p>
+  <h2 class="sec-title">What CardioScan delivers today</h2>
+  <p class="sec-desc">Every feature was deliberately chosen to make the tool useful for real clinical screening scenarios.</p>
+
+  <div class="cards">
+    <div class="card" style="border-top:2px solid var(--teal);">
+      <div class="card-icon icon-teal">🔮</div>
+      <h3>ML Risk Prediction</h3>
+      <p>Random Forest classifier trained on 303 patient records from the UCI Heart Disease dataset. Returns both binary prediction and probability score.</p>
+    </div>
+    <div class="card" style="border-top:2px solid var(--green);">
+      <div class="card-icon icon-green">📊</div>
+      <h3>Feature Importance Chart</h3>
+      <p>Interactive Chart.js bar chart showing which of the 13 clinical features most influenced the current prediction — bringing transparency to the AI decision.</p>
+    </div>
+    <div class="card" style="border-top:2px solid var(--purple);">
+      <div class="card-icon icon-purple">💪</div>
+      <h3>BMI Auto-Calculator</h3>
+      <p>Calculates and classifies BMI in real time from height and weight inputs. Adds obesity/overweight clinical alert if BMI ≥ 25.</p>
+    </div>
+    <div class="card" style="border-top:2px solid var(--yellow);">
+      <div class="card-icon icon-yellow">⚠️</div>
+      <h3>Clinical Alert System</h3>
+      <p>Automatically flags critical values: BP ≥ 180, cholesterol ≥ 240, age ≥ 70, low heart rate, ST depression. Displayed before and after prediction.</p>
+    </div>
+    <div class="card" style="border-top:2px solid #ff4757;">
+      <div class="card-icon icon-red">📄</div>
+      <h3>PDF Report Export</h3>
+      <p>Generates a professional, formatted clinical report using ReportLab — includes patient details, all vitals, risk score, and clinical alerts.</p>
+    </div>
+    <div class="card" style="border-top:2px solid rgba(0,196,204,0.4);">
+      <div class="card-icon icon-teal">🕒</div>
+      <h3>Session History</h3>
+      <p>In-session patient history table with risk bar visualisation. Supports up to 50 records per session with one-click clear.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- TECHNICAL -->
+<section id="technical">
+  <p class="sec-label">04 — Technical Architecture</p>
+  <h2 class="sec-title">How CardioScan is built</h2>
+  <p class="sec-desc">A clean, production-ready stack from data pipeline through to containerised deployment.</p>
+
+  <div style="margin-bottom:40px;">
+    <div style="background:var(--navy-card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+      <table class="feat-table">
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">ML Model</td>
+            <td>
+              <!-- chip-wrap ensures chips wrap onto next line instead of overflowing -->
+              <div class="chip-wrap">
+                <span class="tech-chip">scikit-learn</span>
+                <span class="tech-chip">RandomForest</span>
+                <span class="tech-chip">GridSearchCV</span>
+              </div>
+            </td>
+            <td>Trained, serialised classifier with cross-validated hyperparameters</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">Backend</td>
+            <td>
+              <div class="chip-wrap">
+                <span class="tech-chip">Flask</span>
+                <span class="tech-chip">pandas</span>
+                <span class="tech-chip">pickle</span>
+              </div>
+            </td>
+            <td>REST-style web server with predict, export, and history endpoints</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">Frontend</td>
+            <td>
+              <div class="chip-wrap">
+                <span class="tech-chip">Jinja2</span>
+                <span class="tech-chip">Chart.js</span>
+                <span class="tech-chip">CSS Grid</span>
+              </div>
+            </td>
+            <td>Responsive single-page UI with live validation and BMI calculation</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">PDF Export</td>
+            <td>
+              <div class="chip-wrap">
+                <span class="tech-chip">ReportLab</span>
+              </div>
+            </td>
+            <td>Programmatic clinical report generation with custom branding</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">Deployment</td>
+            <td>
+              <div class="chip-wrap">
+                <span class="tech-chip">Docker</span>
+                <span class="tech-chip">Gunicorn</span>
+              </div>
+            </td>
+            <td>Containerised for consistent deployment anywhere</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-pri); font-weight:500;">Dataset</td>
+            <td>
+              <div class="chip-wrap">
+                <span class="tech-chip">UCI Heart Disease</span>
+                <span class="tech-chip">303 records</span>
+              </div>
+            </td>
+            <td>Widely-validated benchmark cardiac dataset</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-box">
+      <div class="big color-teal">88.5%</div>
+      <div class="small">Test accuracy</div>
+    </div>
+    <div class="metric-box">
+      <div class="big color-green">5-fold</div>
+      <div class="small">Cross-validation</div>
+    </div>
+    <div class="metric-box">
+      <div class="big color-yellow">48</div>
+      <div class="small">Hyperparameter combos tested</div>
+    </div>
+    <div class="metric-box">
+      <div class="big color-purple">0ms</div>
+      <div class="small">Inference latency (in-memory)</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FUTURE SCALABILITY -->
+<section id="future">
+  <p class="sec-label">05 — Future Scope &amp; Scalability</p>
+  <h2 class="sec-title">How CardioScan can grow</h2>
+  <p class="sec-desc">The current build is a solid foundation. Here's the roadmap from student project to real clinical tool.</p>
+
+  <div class="two-col">
+    <div class="col-text">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <p class="tl-title" style="color:var(--teal);">Version 2 — Multi-model ensemble</p>
+          <p class="tl-desc">Add XGBoost and Logistic Regression as comparison models. Let users see which model predicts what and why — boosting trust and educational value.</p>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--green);"></div>
+          <p class="tl-title" style="color:var(--green);">Version 3 — Database + user accounts</p>
+          <p class="tl-desc">Replace in-memory history with PostgreSQL. Add physician login to track patients across visits and generate longitudinal risk trend reports.</p>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--yellow);"></div>
+          <p class="tl-title" style="color:var(--yellow);">Version 4 — EHR integration</p>
+          <p class="tl-desc">FHIR-compliant API layer to pull data directly from Electronic Health Record systems. Eliminates manual data entry — the biggest barrier to clinical adoption.</p>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--purple);"></div>
+          <p class="tl-title" style="color:var(--purple);">Version 5 — Mobile app + wearables</p>
+          <p class="tl-desc">React Native frontend + Apple Health / Fitbit integration. Continuous passive risk monitoring using real-time heart rate and activity data.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-visual">
+      <div class="cards" style="gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:1.4rem; margin-bottom:8px;">🧠</div>
+          <h3 style="font-size:0.9rem;">SHAP explainability</h3>
+          <p style="font-size:0.8rem;">SHAP values for individual prediction transparency — regulatory compliance for medical AI</p>
+        </div>
+        <div class="card" style="padding:18px;">
+          <div style="font-size:1.4rem; margin-bottom:8px;">🌐</div>
+          <h3 style="font-size:0.9rem;">Multi-language support</h3>
+          <p style="font-size:0.8rem;">Urdu, Arabic, and regional language UI — critical for Pakistan and MENA region deployment</p>
+        </div>
+        <div class="card" style="padding:18px;">
+          <div style="font-size:1.4rem; margin-bottom:8px;">☁️</div>
+          <h3 style="font-size:0.9rem;">Cloud deployment</h3>
+          <p style="font-size:0.8rem;">Docker → AWS/Azure deployment with auto-scaling. Current Dockerfile already enables this</p>
+        </div>
+        <div class="card" style="padding:18px;">
+          <div style="font-size:1.4rem; margin-bottom:8px;">🔒</div>
+          <h3 style="font-size:0.9rem;">HIPAA/GDPR compliance</h3>
+          <p style="font-size:0.8rem;">Encryption at rest, audit logs, and anonymisation pipeline — required for real clinical use</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- IMPACT -->
+<section id="impact">
+  <p class="sec-label">06 — Real-World Impact</p>
+  <h2 class="sec-title">Why this matters beyond the grade</h2>
+  <p class="sec-desc">CardioScan demonstrates how machine learning can democratise access to specialist-level insight in resource-limited settings.</p>
+
+  <div class="cards" style="margin-bottom:40px;">
+    <div class="card" style="border-left:3px solid var(--teal); padding-left:20px;">
+      <h3>Rural &amp; underserved areas</h3>
+      <p>A community health worker with a smartphone and basic blood test results could screen dozens of patients per day using CardioScan — no cardiologist needed for a first pass.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green); padding-left:20px;">
+      <h3>Preventive care shift</h3>
+      <p>Moving from reactive emergency treatment to proactive risk screening could reduce cardiac events by 20–30%, according to WHO estimates on early intervention.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--yellow); padding-left:20px;">
+      <h3>Clinical decision support</h3>
+      <p>Even for trained doctors, a second-opinion risk score with feature importance helps prioritise which patients need urgent ECG or stress tests first.</p>
+    </div>
+  </div>
+
+  <div class="quote-box">
+    "The model's accuracy of 88.5% on the UCI dataset is competitive with published clinical decision support systems — making this not just an academic exercise, but a genuine proof-of-concept for deployable medical AI."
+  </div>
+
+  <div style="margin-top:40px; background:var(--navy-card); border:1px solid var(--border); border-radius:14px; padding:28px;">
+    <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:var(--teal); font-weight:600; margin-bottom:20px;">Ethical considerations</p>
+    <div class="cards" style="gap:14px;">
+      <div style="padding:0;">
+        <h4 style="font-size:0.9rem; margin-bottom:6px; color:var(--text-pri);">Not a replacement for doctors</h4>
+        <p style="font-size:0.82rem; color:var(--text-sec);">CardioScan is a decision support tool — every output is clearly labelled "for educational purposes only" and recommends physician consultation.</p>
+      </div>
+      <div style="padding:0;">
+        <h4 style="font-size:0.9rem; margin-bottom:6px; color:var(--text-pri);">Dataset limitations</h4>
+        <p style="font-size:0.82rem; color:var(--text-sec);">The UCI dataset is US-demographic and 1988-era. A production system would require diverse, recent data for generalisability.</p>
+      </div>
+      <div style="padding:0;">
+        <h4 style="font-size:0.9rem; margin-bottom:6px; color:var(--text-pri);">No data storage</h4>
+        <p style="font-size:0.82rem; color:var(--text-sec);">Current version stores no data to disk — session history is in-memory only. This is the right privacy default for a prototype.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div style="width:48px;height:48px;background:var(--teal-dim);border:1px solid rgba(0,196,204,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+    <svg viewBox="0 0 24 24" fill="none" width="24" height="24">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#00c4cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h2>CardioScan</h2>
+  <p style="margin-bottom:8px;">AI-Powered Cardiac Risk Assessment</p>
+  <p style="margin-bottom:24px; font-size:0.82rem; color:var(--text-dim);">Developed by <a href="https://github.com/Muneeb-Mustafa">Muneeb Mustafa</a> · 2026</p>
+  <div class="hero-badges" style="justify-content:center;">
+    <span class="badge badge-teal">Random Forest · 88.5% Acc.</span>
+    <span class="badge badge-green">Flask + scikit-learn</span>
+    <span class="badge badge-purple">ReportLab PDF</span>
+    <span class="badge badge-yellow">Docker-ready</span>
+  </div>
+  <p style="margin-top:32px; font-size:0.78rem; color:var(--text-dim); font-style:italic;">For educational purposes only — not a substitute for professional medical advice</p>
+</footer>
+
+</body>
+</html>

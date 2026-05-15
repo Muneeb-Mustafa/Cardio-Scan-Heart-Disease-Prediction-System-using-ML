@@ -1,497 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CardioScan — Heart Disease Prediction</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
+
 <body>
 
-<!-- ══════════ HEADER ══════════ -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 35s-15-9-15-20a10 10 0 0 1 15-9A10 10 0 0 1 35 15c0 11-15 20-15 20z" fill="url(#hg)"/>
-          <polyline points="6,20 11,20 14,14 17,26 21,18 24,22 27,20 34,20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <defs>
-            <linearGradient id="hg" x1="5" y1="6" x2="35" y2="35" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#00c4cc"/>
-              <stop offset="1" stop-color="#0077b6"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <span class="brand-name">CardioScan</span>
-        <span class="brand-tagline">AI-Powered Cardiac Risk Assessment</span>
-      </div>
-    </div>
-    <div class="header-meta">
-      <span class="badge-model">Random Forest · 88.5% Accuracy</span>
-    </div>
-  </div>
-  <div class="ecg-strip">
-    <svg viewBox="0 0 1200 50" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <polyline points="0,25 80,25 110,25 120,5 130,45 140,10 155,40 170,25 250,25 330,25 360,25 370,5 380,45 390,10 405,40 420,25 500,25 580,25 610,25 620,5 630,45 640,10 655,40 670,25 750,25 830,25 860,25 870,5 880,45 890,10 905,40 920,25 1000,25 1080,25 1110,25 1120,5 1130,45 1140,10 1155,40 1170,25 1200,25"
-        stroke="rgba(0,196,204,0.6)" stroke-width="1.5" fill="none"/>
-    </svg>
-  </div>
-</header>
-
-<!-- ══════════ MAIN ══════════ -->
-<main class="main-wrap">
-
-  <!-- ─── RESULT PANEL ─── -->
-  {% if prediction is not none %}
-  <section class="result-panel {{ 'result-danger' if prediction == 1 else 'result-safe' }}" id="resultPanel">
-
-    <div class="result-left">
-      <div class="result-icon">
-        {% if prediction == 1 %}
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="rgba(255,71,87,0.2)" stroke="#ff4757" stroke-width="2"/>
-          <line x1="12" y1="9" x2="12" y2="13" stroke="#ff4757" stroke-width="2" stroke-linecap="round"/>
-          <line x1="12" y1="17" x2="12.01" y2="17" stroke="#ff4757" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        {% else %}
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" fill="none" stroke="#2ed573" stroke-width="2" stroke-linecap="round"/>
-          <polyline points="22 4 12 14.01 9 11.01" stroke="#2ed573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        {% endif %}
-      </div>
-      <div class="result-text">
-        <h2 class="result-label">{{ "Disease Detected" if prediction == 1 else "No Disease Detected" }}</h2>
-        <p class="result-sub">
-          {% if prediction == 1 %}
-            High cardiac risk indicators found. Immediate medical consultation recommended.
-          {% else %}
-            No significant cardiac risk indicators detected based on current data.
-          {% endif %}
-        </p>
-      </div>
-    </div>
-
-    <div class="result-right">
-      <div class="risk-gauge-wrap">
-        <div class="risk-gauge" id="riskGauge">
-          <svg class="gauge-svg" viewBox="0 0 120 120">
-            <circle class="gauge-bg" cx="60" cy="60" r="50" fill="none" stroke-width="10"/>
-            <circle class="gauge-fill {{ 'fill-danger' if prediction == 1 else 'fill-safe' }}"
-              cx="60" cy="60" r="50" fill="none" stroke-width="10"
-              stroke-dasharray="314"
-              stroke-dashoffset="{{ 314 - (314 * risk_pct / 100) | round | int }}"
-              transform="rotate(-90 60 60)"/>
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 35s-15-9-15-20a10 10 0 0 1 15-9A10 10 0 0 1 35 15c0 11-15 20-15 20z" fill="url(#hg)" />
+            <polyline points="6,20 11,20 14,14 17,26 21,18 24,22 27,20 34,20" stroke="white" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            <defs>
+              <linearGradient id="hg" x1="5" y1="6" x2="35" y2="35" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00c4cc" />
+                <stop offset="1" stop-color="#0077b6" />
+              </linearGradient>
+            </defs>
           </svg>
-          <div class="gauge-center">
-            <span class="gauge-pct">{{ risk_pct }}</span>
-            <span class="gauge-unit">% risk</span>
-          </div>
         </div>
-        <p class="gauge-label">Cardiac Risk Score</p>
+        <div class="brand-text">
+          <span class="brand-name">CardioScan</span>
+          <span class="brand-tagline">AI-Powered Cardiac Risk Assessment</span>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span class="badge-model">Random Forest · 88.5% Accuracy</span>
       </div>
     </div>
-
-  </section>
-
-  <!-- ─── WARNINGS ─── -->
-  {% if warnings %}
-  <section class="warnings-section">
-    <h3 class="section-title warning-title">
-      <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#ffc107" stroke-width="2"/>
-        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffc107" stroke-width="2"/>
-        <line x1="12" y1="17" x2="12.01" y2="17" stroke="#ffc107" stroke-width="2"/>
+    <div class="ecg-strip">
+      <svg viewBox="0 0 1200 50" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline
+          points="0,25 80,25 110,25 120,5 130,45 140,10 155,40 170,25 250,25 330,25 360,25 370,5 380,45 390,10 405,40 420,25 500,25 580,25 610,25 620,5 630,45 640,10 655,40 670,25 750,25 830,25 860,25 870,5 880,45 890,10 905,40 920,25 1000,25 1080,25 1110,25 1120,5 1130,45 1140,10 1155,40 1170,25 1200,25"
+          stroke="rgba(0,196,204,0.6)" stroke-width="1.5" fill="none" />
       </svg>
-      Clinical Alerts
-    </h3>
-    <ul class="warnings-list">
-      {% for w in warnings %}
-      <li class="warning-item">{{ w }}</li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
-
-  <!-- ─── FEATURE IMPORTANCE (after prediction) ─── -->
-  <section class="chart-section">
-    <h3 class="section-title">
-      <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#00c4cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Key Risk Factors — Feature Importance
-    </h3>
-    <p class="section-desc">How much each medical feature influenced this prediction.</p>
-    <div class="chart-wrap">
-      <canvas id="importanceChart"></canvas>
     </div>
-  </section>
+  </header>
 
-  {% endif %}
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main-wrap">
 
-  <!-- ─── PATIENT FORM ─── -->
-  <section class="form-card" id="formSection">
-    <h3 class="section-title">
-      <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#00c4cc" stroke-width="2"/>
-        <circle cx="12" cy="7" r="4" stroke="#00c4cc" stroke-width="2"/>
-      </svg>
-      Patient Information
-    </h3>
+    <!-- ─── RESULT PANEL ─── -->
+    {% if prediction is not none %}
+    <section class="result-panel {{ 'result-danger' if prediction == 1 else 'result-safe' }}" id="resultPanel">
 
-    <form action="/predict" method="post" id="predictForm" novalidate>
+      <div class="result-left">
+        <div class="result-icon">
+          {% if prediction == 1 %}
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              fill="rgba(255,71,87,0.2)" stroke="#ff4757" stroke-width="2" />
+            <line x1="12" y1="9" x2="12" y2="13" stroke="#ff4757" stroke-width="2" stroke-linecap="round" />
+            <line x1="12" y1="17" x2="12.01" y2="17" stroke="#ff4757" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" fill="none" stroke="#2ed573" stroke-width="2"
+              stroke-linecap="round" />
+            <polyline points="22 4 12 14.01 9 11.01" stroke="#2ed573" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          {% endif %}
+        </div>
+        <div class="result-text">
+          <h2 class="result-label">{{ "Disease Detected" if prediction == 1 else "No Disease Detected" }}</h2>
+          <p class="result-sub">
+            {% if prediction == 1 %}
+            High cardiac risk indicators found. Immediate medical consultation recommended.
+            {% else %}
+            No significant cardiac risk indicators detected based on current data.
+            {% endif %}
+          </p>
+        </div>
+      </div>
 
-      <!-- Demographics -->
-      <div class="field-group">
-        <h4 class="group-label">Demographics</h4>
-        <div class="field-row">
-
-          <div class="field">
-            <label for="age">Age <span class="unit">years</span></label>
-            <input type="number" id="age" name="age" value="{{ age if age is not none else '' }}"
-              placeholder="18 – 100" min="1" max="120" required oninput="validateField(this, 18, 100)">
-            <span class="field-hint" id="age-hint"></span>
-          </div>
-
-          <div class="field">
-            <label for="sex">Biological Sex</label>
-            <select id="sex" name="sex" required>
-              <option value="" disabled {% if sex is none %}selected{% endif %}>Select…</option>
-              <option value="1" {% if sex == 1 %}selected{% endif %}>Male</option>
-              <option value="0" {% if sex == 0 %}selected{% endif %}>Female</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="cp">Chest Pain Type</label>
-            <select id="cp" name="cp" required>
-              <option value="" disabled {% if cp is none %}selected{% endif %}>Select…</option>
-              <option value="0" {% if cp == 0 %}selected{% endif %}>Typical Angina</option>
-              <option value="1" {% if cp == 1 %}selected{% endif %}>Atypical Angina</option>
-              <option value="2" {% if cp == 2 %}selected{% endif %}>Non-anginal Pain</option>
-              <option value="3" {% if cp == 3 %}selected{% endif %}>Asymptomatic</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="height">Height <span class="unit">cm (optional)</span></label>
-            <input type="number" id="height" name="height"
-              value="{{ height if height else '' }}"
-              placeholder="e.g. 175" min="100" max="250" oninput="calcBMI()">
-          </div>
-
-          <div class="field">
-            <label for="weight">Weight <span class="unit">kg (optional)</span></label>
-            <input type="number" id="weight" name="weight"
-              value="{{ weight if weight else '' }}"
-              placeholder="e.g. 72" min="30" max="300" oninput="calcBMI()">
-          </div>
-
-          <div class="field field-bmi">
-            <label>BMI <span class="unit">auto-calculated</span></label>
-            <div class="bmi-display" id="bmiDisplay">
-              {% if bmi %}
-                <span class="bmi-val">{{ bmi }}</span>
-                <span class="bmi-cat" id="bmiCat"></span>
-              {% else %}
-                <span class="bmi-placeholder">Enter height &amp; weight</span>
-              {% endif %}
+      <div class="result-right">
+        <div class="risk-gauge-wrap">
+          <div class="risk-gauge" id="riskGauge">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="50" fill="none" stroke-width="10" />
+              <circle class="gauge-fill {{ 'fill-danger' if prediction == 1 else 'fill-safe' }}" cx="60" cy="60" r="50"
+                fill="none" stroke-width="10" stroke-dasharray="314"
+                stroke-dashoffset="{{ 314 - (314 * risk_pct / 100) | round | int }}" transform="rotate(-90 60 60)" />
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-pct">{{ risk_pct }}</span>
+              <span class="gauge-unit">% risk</span>
             </div>
           </div>
-
+          <p class="gauge-label">Cardiac Risk Score</p>
         </div>
+
+        <!-- ─── PDF EXPORT BUTTON ─── -->
+        <form action="/export-pdf" method="post" id="pdfForm" style="margin-top:10px;">
+          <input type="hidden" name="age" value="{{ age }}">
+          <input type="hidden" name="sex" value="{{ sex }}">
+          <input type="hidden" name="cp" value="{{ cp }}">
+          <input type="hidden" name="trestbps" value="{{ trestbps }}">
+          <input type="hidden" name="chol" value="{{ chol }}">
+          <input type="hidden" name="fbs" value="{{ fbs }}">
+          <input type="hidden" name="restecg" value="{{ restecg }}">
+          <input type="hidden" name="thalach" value="{{ thalach }}">
+          <input type="hidden" name="exang" value="{{ exang }}">
+          <input type="hidden" name="oldpeak" value="{{ oldpeak }}">
+          <input type="hidden" name="slope" value="{{ slope }}">
+          <input type="hidden" name="ca" value="{{ ca }}">
+          <input type="hidden" name="thal" value="{{ thal }}">
+          <input type="hidden" name="patient_name" value="{{ patient_name if patient_name else '' }}">
+          <input type="hidden" name="height" value="{{ height if height else '' }}">
+          <input type="hidden" name="weight" value="{{ weight if weight else '' }}">
+          <input type="hidden" name="bmi" value="{{ bmi if bmi else '' }}">
+          <input type="hidden" name="risk_pct" value="{{ risk_pct }}">
+          <input type="hidden" name="prediction" value="{{ prediction }}">
+          <input type="hidden" name="warnings" value="{{ warnings | join('|') }}">
+          <button type="submit" class="btn-pdf">
+            <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" />
+              <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <polyline points="9 15 12 18 15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            Download Report
+          </button>
+        </form>
+
       </div>
 
-      <!-- Cardiac Vitals -->
-      <div class="field-group">
-        <h4 class="group-label">Cardiac Vitals</h4>
-        <div class="field-row">
+    </section>
 
-          <div class="field">
-            <label for="trestbps">Resting BP <span class="unit">mmHg · 94–200</span></label>
-            <input type="number" id="trestbps" name="trestbps"
-              value="{{ trestbps if trestbps is not none else '' }}"
-              placeholder="e.g. 120" min="80" max="220" required oninput="validateField(this, 80, 220)">
-            <span class="field-hint" id="trestbps-hint"></span>
-          </div>
-
-          <div class="field">
-            <label for="chol">Cholesterol <span class="unit">mg/dl · 126–564</span></label>
-            <input type="number" id="chol" name="chol"
-              value="{{ chol if chol is not none else '' }}"
-              placeholder="e.g. 200" min="100" max="600" required oninput="validateField(this, 100, 600)">
-            <span class="field-hint" id="chol-hint"></span>
-          </div>
-
-          <div class="field">
-            <label for="thalach">Max Heart Rate <span class="unit">bpm · 71–202</span></label>
-            <input type="number" id="thalach" name="thalach"
-              value="{{ thalach if thalach is not none else '' }}"
-              placeholder="e.g. 150" min="60" max="220" required oninput="validateField(this, 60, 220)">
-            <span class="field-hint" id="thalach-hint"></span>
-          </div>
-
-          <div class="field">
-            <label for="oldpeak">ST Depression <span class="unit">0.0 – 6.2</span></label>
-            <input type="number" id="oldpeak" name="oldpeak" step="0.1"
-              value="{{ oldpeak if oldpeak is not none else '' }}"
-              placeholder="e.g. 1.5" min="0" max="7" required oninput="validateField(this, 0, 7)">
-            <span class="field-hint" id="oldpeak-hint"></span>
-          </div>
-
-          <div class="field">
-            <label for="fbs">Fasting Blood Sugar <span class="unit">&gt;120 mg/dl</span></label>
-            <select id="fbs" name="fbs" required>
-              <option value="1" {% if fbs == 1 %}selected{% endif %}>True (≥120)</option>
-              <option value="0" {% if fbs == 0 or fbs is none %}selected{% endif %}>False (&lt;120)</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="exang">Exercise Induced Angina</label>
-            <select id="exang" name="exang" required>
-              <option value="1" {% if exang == 1 %}selected{% endif %}>Yes</option>
-              <option value="0" {% if exang == 0 or exang is none %}selected{% endif %}>No</option>
-            </select>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Diagnostic Results -->
-      <div class="field-group">
-        <h4 class="group-label">Diagnostic Results</h4>
-        <div class="field-row">
-
-          <div class="field">
-            <label for="restecg">Resting ECG</label>
-            <select id="restecg" name="restecg" required>
-              <option value="0" {% if restecg == 0 or restecg is none %}selected{% endif %}>Normal</option>
-              <option value="1" {% if restecg == 1 %}selected{% endif %}>ST-T Wave Abnormality</option>
-              <option value="2" {% if restecg == 2 %}selected{% endif %}>LV Hypertrophy</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="slope">ST Segment Slope</label>
-            <select id="slope" name="slope" required>
-              <option value="0" {% if slope == 0 or slope is none %}selected{% endif %}>Upsloping</option>
-              <option value="1" {% if slope == 1 %}selected{% endif %}>Flat</option>
-              <option value="2" {% if slope == 2 %}selected{% endif %}>Downsloping</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="ca">Major Vessels <span class="unit">fluoroscopy</span></label>
-            <select id="ca" name="ca" required>
-              {% for value in cas %}
-              <option value="{{ value }}" {% if value == ca %}selected{% endif %}>{{ value }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="thal">Thalassemia</label>
-            <select id="thal" name="thal" required>
-              <option value="0" {% if thal == 0 or thal is none %}selected{% endif %}>Normal</option>
-              <option value="1" {% if thal == 1 %}selected{% endif %}>Fixed Defect</option>
-              <option value="2" {% if thal == 2 %}selected{% endif %}>Reversible Defect</option>
-            </select>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn-predict" id="submitBtn">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Run Prediction
-        </button>
-        <button type="reset" class="btn-reset" onclick="resetForm()">Clear Form</button>
-      </div>
-
-    </form>
-  </section>
-
-  <!-- ─── FEATURE IMPORTANCE (no prediction yet) ─── -->
-  {% if prediction is none %}
-  <section class="chart-section">
-    <h3 class="section-title">
-      <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#00c4cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Model Feature Importance
-    </h3>
-    <p class="section-desc">Which medical indicators most influence the model's predictions across all patients.</p>
-    <div class="chart-wrap">
-      <canvas id="importanceChart"></canvas>
-    </div>
-  </section>
-  {% endif %}
-
-  <!-- ─── PATIENT HISTORY ─── -->
-  {% if history %}
-  <section class="history-section">
-    <div class="history-header">
-      <h3 class="section-title" style="margin-bottom:0">
+    <!-- ─── WARNINGS ─── -->
+    {% if warnings %}
+    <section class="warnings-section">
+      <h3 class="section-title warning-title">
         <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-          <circle cx="12" cy="12" r="10" stroke="#00c4cc" stroke-width="2"/>
-          <polyline points="12 6 12 12 16 14" stroke="#00c4cc" stroke-width="2" stroke-linecap="round"/>
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            stroke="#ffc107" stroke-width="2" />
+          <line x1="12" y1="9" x2="12" y2="13" stroke="#ffc107" stroke-width="2" />
+          <line x1="12" y1="17" x2="12.01" y2="17" stroke="#ffc107" stroke-width="2" />
         </svg>
-        Session History
+        Clinical Alerts
       </h3>
-      <button class="btn-clear" onclick="clearHistory()">Clear All</button>
-    </div>
-    <div class="table-wrap">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Age</th>
-            <th>Sex</th>
-            <th>Risk %</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for entry in history %}
-          <tr>
-            <td>{{ entry.time }}</td>
-            <td>{{ entry.age }}</td>
-            <td>{{ entry.sex }}</td>
-            <td>
-              <div class="risk-bar-wrap">
-                <div class="risk-bar {{ 'risk-bar-danger' if entry.risk > 50 else 'risk-bar-safe' }}"
-                  style="width: {{ entry.risk }}%"></div>
-                <span>{{ entry.risk }}%</span>
+      <ul class="warnings-list">
+        {% for w in warnings %}
+        <li class="warning-item">{{ w }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <!-- ─── FEATURE IMPORTANCE (after prediction) ─── -->
+    <section class="chart-section">
+      <h3 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#00c4cc" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+        Key Risk Factors — Feature Importance
+      </h3>
+      <p class="section-desc">How much each medical feature influenced this prediction.</p>
+      <div class="chart-wrap">
+        <canvas id="importanceChart"></canvas>
+      </div>
+    </section>
+
+    {% endif %}
+
+    <!-- ─── PATIENT FORM ─── -->
+    <section class="form-card" id="formSection">
+      <h3 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#00c4cc" stroke-width="2" />
+          <circle cx="12" cy="7" r="4" stroke="#00c4cc" stroke-width="2" />
+        </svg>
+        Patient Information
+      </h3>
+
+      <form action="/predict" method="post" id="predictForm" novalidate>
+
+        <!-- Demographics -->
+        <div class="field-group">
+          <h4 class="group-label">Demographics</h4>
+          <div class="field-row">
+
+            <div class="field">
+              <label for="patient_name">Patient Name</label>
+              <input type="text" id="patient_name" name="patient_name"
+                value="{{ patient_name if patient_name else '' }}" placeholder="e.g. Muneeb">
+            </div>
+
+            <div class="field">
+              <label for="age">Age <span class="unit">years</span></label>
+              <input type="number" id="age" name="age" value="{{ age if age is not none else '' }}"
+                placeholder="18 – 100" min="1" max="120" required oninput="validateField(this, 18, 100)">
+              <span class="field-hint" id="age-hint"></span>
+            </div>
+
+            <div class="field">
+              <label for="sex">Biological Sex</label>
+              <select id="sex" name="sex" required>
+                <option value="" disabled {% if sex is none %}selected{% endif %}>Select…</option>
+                <option value="1" {% if sex==1 %}selected{% endif %}>Male</option>
+                <option value="0" {% if sex==0 %}selected{% endif %}>Female</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="cp">Chest Pain Type</label>
+              <select id="cp" name="cp" required>
+                <option value="" disabled {% if cp is none %}selected{% endif %}>Select…</option>
+                <option value="0" {% if cp==0 %}selected{% endif %}>Typical Angina</option>
+                <option value="1" {% if cp==1 %}selected{% endif %}>Atypical Angina</option>
+                <option value="2" {% if cp==2 %}selected{% endif %}>Non-anginal Pain</option>
+                <option value="3" {% if cp==3 %}selected{% endif %}>Asymptomatic</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="height">Height <span class="unit">cm (optional)</span></label>
+              <input type="number" id="height" name="height" value="{{ height if height else '' }}"
+                placeholder="e.g. 175" min="100" max="250" oninput="calcBMI()">
+            </div>
+
+            <div class="field">
+              <label for="weight">Weight <span class="unit">kg (optional)</span></label>
+              <input type="number" id="weight" name="weight" value="{{ weight if weight else '' }}"
+                placeholder="e.g. 72" min="30" max="300" oninput="calcBMI()">
+            </div>
+
+            <div class="field field-bmi">
+              <label>BMI <span class="unit">auto-calculated</span></label>
+              <div class="bmi-display" id="bmiDisplay">
+                {% if bmi %}
+                <span class="bmi-val">{{ bmi }}</span>
+                <span class="bmi-cat" id="bmiCat"></span>
+                {% else %}
+                <span class="bmi-placeholder">Enter height &amp; weight</span>
+                {% endif %}
               </div>
-            </td>
-            <td>
-              <span class="badge {{ 'badge-danger' if entry.result == 'Disease' else 'badge-safe' }}">
-                {{ entry.result }}
-              </span>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
-  {% endif %}
+            </div>
 
-</main>
+          </div>
+        </div>
 
-<!-- ══════════ FOOTER ══════════ -->
-<footer class="site-footer">
-  <p>© 2026 CardioScan &mdash; Heart Disease Prediction System &nbsp;|&nbsp; Developed by
-    <a href="https://github.com/Muneeb-Mustafa" target="_blank">Muneeb Mustafa</a>
-  </p>
-  <p class="footer-disclaimer">For educational purposes only &mdash; not a substitute for medical advice</p>
-</footer>
+        <!-- Cardiac Vitals -->
+        <div class="field-group">
+          <h4 class="group-label">Cardiac Vitals</h4>
+          <div class="field-row">
 
-<script>
-// ── Chart.js Feature Importance ──────────────────────────────────────────────
-const featLabels = {{ feat_labels | safe }};
-const featValues = {{ feat_values | safe }};
+            <div class="field">
+              <label for="trestbps">Resting BP <span class="unit">mmHg · 94–200</span></label>
+              <input type="number" id="trestbps" name="trestbps" value="{{ trestbps if trestbps is not none else '' }}"
+                placeholder="e.g. 120" min="80" max="220" required oninput="validateField(this, 80, 220)">
+              <span class="field-hint" id="trestbps-hint"></span>
+            </div>
 
-const ctx = document.getElementById('importanceChart');
-if (ctx) {
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: featLabels,
-      datasets: [{
-        label: 'Importance (%)',
-        data: featValues,
-        backgroundColor: featValues.map((v, i) =>
-          i === 0 ? 'rgba(0,196,204,0.9)' :
-          i === 1 ? 'rgba(0,196,204,0.75)' :
-          i < 4   ? 'rgba(0,196,204,0.6)' : 'rgba(0,196,204,0.35)'
-        ),
-        borderColor: 'rgba(0,196,204,0.9)',
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}%` } }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255,255,255,0.06)' },
-          ticks: { color: '#8ba5c0', callback: v => v + '%' }
+            <div class="field">
+              <label for="chol">Cholesterol <span class="unit">mg/dl · 126–564</span></label>
+              <input type="number" id="chol" name="chol" value="{{ chol if chol is not none else '' }}"
+                placeholder="e.g. 200" min="100" max="600" required oninput="validateField(this, 100, 600)">
+              <span class="field-hint" id="chol-hint"></span>
+            </div>
+
+            <div class="field">
+              <label for="thalach">Max Heart Rate <span class="unit">bpm · 71–202</span></label>
+              <input type="number" id="thalach" name="thalach" value="{{ thalach if thalach is not none else '' }}"
+                placeholder="e.g. 150" min="60" max="220" required oninput="validateField(this, 60, 220)">
+              <span class="field-hint" id="thalach-hint"></span>
+            </div>
+
+            <div class="field">
+              <label for="oldpeak">ST Depression <span class="unit">0.0 – 6.2</span></label>
+              <input type="number" id="oldpeak" name="oldpeak" step="0.1"
+                value="{{ oldpeak if oldpeak is not none else '' }}" placeholder="e.g. 1.5" min="0" max="7" required
+                oninput="validateField(this, 0, 7)">
+              <span class="field-hint" id="oldpeak-hint"></span>
+            </div>
+
+            <div class="field">
+              <label for="fbs">Fasting Blood Sugar <span class="unit">&gt;120 mg/dl</span></label>
+              <select id="fbs" name="fbs" required>
+                <option value="1" {% if fbs==1 %}selected{% endif %}>True (>=120)</option>
+                <option value="0" {% if fbs==0 or fbs is none %}selected{% endif %}>False (&lt;120)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="exang">Exercise Induced Angina</label>
+              <select id="exang" name="exang" required>
+                <option value="1" {% if exang==1 %}selected{% endif %}>Yes</option>
+                <option value="0" {% if exang==0 or exang is none %}selected{% endif %}>No</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Diagnostic Results -->
+        <div class="field-group">
+          <h4 class="group-label">Diagnostic Results</h4>
+          <div class="field-row">
+
+            <div class="field">
+              <label for="restecg">Resting ECG</label>
+              <select id="restecg" name="restecg" required>
+                <option value="0" {% if restecg==0 or restecg is none %}selected{% endif %}>Normal</option>
+                <option value="1" {% if restecg==1 %}selected{% endif %}>ST-T Wave Abnormality</option>
+                <option value="2" {% if restecg==2 %}selected{% endif %}>LV Hypertrophy</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="slope">ST Segment Slope</label>
+              <select id="slope" name="slope" required>
+                <option value="0" {% if slope==0 or slope is none %}selected{% endif %}>Upsloping</option>
+                <option value="1" {% if slope==1 %}selected{% endif %}>Flat</option>
+                <option value="2" {% if slope==2 %}selected{% endif %}>Downsloping</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="ca">Major Vessels <span class="unit">fluoroscopy</span></label>
+              <select id="ca" name="ca" required>
+                {% for value in cas %}
+                <option value="{{ value }}" {% if value==ca %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="thal">Thalassemia</label>
+              <select id="thal" name="thal" required>
+                <option value="0" {% if thal==0 or thal is none %}selected{% endif %}>Normal</option>
+                <option value="1" {% if thal==1 %}selected{% endif %}>Fixed Defect</option>
+                <option value="2" {% if thal==2 %}selected{% endif %}>Reversible Defect</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-predict" id="submitBtn">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Run Prediction
+          </button>
+          <button type="reset" class="btn-reset" onclick="resetForm()">Clear Form</button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ─── FEATURE IMPORTANCE (no prediction yet) ─── -->
+    {% if prediction is none %}
+    <section class="chart-section">
+      <h3 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#00c4cc" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+        Model Feature Importance
+      </h3>
+      <p class="section-desc">Which medical indicators most influence the model's predictions across all patients.</p>
+      <div class="chart-wrap">
+        <canvas id="importanceChart"></canvas>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ─── PATIENT HISTORY ─── -->
+    {% if history %}
+    <section class="history-section">
+      <div class="history-header">
+        <h3 class="section-title" style="margin-bottom:0">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+            <circle cx="12" cy="12" r="10" stroke="#00c4cc" stroke-width="2" />
+            <polyline points="12 6 12 12 16 14" stroke="#00c4cc" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Session History
+        </h3>
+        <button class="btn-clear" onclick="clearHistory()">Clear All</button>
+      </div>
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Age</th>
+              <th>Sex</th>
+              <th>Risk %</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in history %}
+            <tr>
+              <td>{{ entry.time }}</td>
+              <td>{{ entry.age }}</td>
+              <td>{{ entry.sex }}</td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar {{ 'risk-bar-danger' if entry.risk > 50 else 'risk-bar-safe' }}"
+                    style="width: {{ entry.risk }}%"></div>
+                  <span>{{ entry.risk }}%</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge {{ 'badge-danger' if entry.result == 'Disease' else 'badge-safe' }}">
+                  {{ entry.result }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+
+  </main>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer class="site-footer">
+    <p>© 2026 CardioScan &mdash; Heart Disease Prediction System &nbsp;|&nbsp; Developed by
+      <a href="https://github.com/Muneeb-Mustafa" target="_blank">Muneeb Mustafa</a>
+    </p>
+    <p class="footer-disclaimer">For educational purposes only &mdash; not a substitute for medical advice</p>
+  </footer>
+
+  <script>
+    // ── Chart.js Feature Importance ──────────────────────────────────────────────
+    const featLabels = {{ feat_labels | safe }};
+    const featValues = {{ feat_values | safe }};
+
+    const ctx = document.getElementById('importanceChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: featLabels,
+          datasets: [{
+            label: 'Importance (%)',
+            data: featValues,
+            backgroundColor: featValues.map((v, i) =>
+              i === 0 ? 'rgba(0,196,204,0.9)' :
+                i === 1 ? 'rgba(0,196,204,0.75)' :
+                  i < 4 ? 'rgba(0,196,204,0.6)' : 'rgba(0,196,204,0.35)'
+            ),
+            borderColor: 'rgba(0,196,204,0.9)',
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
         },
-        y: {
-          grid: { display: false },
-          ticks: { color: '#c8dff0', font: { size: 12 } }
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.raw}%` } }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              ticks: { color: '#8ba5c0', callback: v => v + '%' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#c8dff0', font: { size: 12 } }
+            }
+          }
         }
-      }
+      });
     }
-  });
-}
 
-// ── BMI Calculator ────────────────────────────────────────────────────────────
-function calcBMI() {
-  const h = parseFloat(document.getElementById('height').value);
-  const w = parseFloat(document.getElementById('weight').value);
-  const disp = document.getElementById('bmiDisplay');
-  if (!h || !w || h < 50 || w < 10) {
-    disp.innerHTML = '<span class="bmi-placeholder">Enter height &amp; weight</span>';
-    return;
-  }
-  const bmi = (w / ((h / 100) ** 2)).toFixed(1);
-  let cat = '', cls = '';
-  if (bmi < 18.5)    { cat = 'Underweight'; cls = 'bmi-under'; }
-  else if (bmi < 25) { cat = 'Normal';      cls = 'bmi-normal'; }
-  else if (bmi < 30) { cat = 'Overweight';  cls = 'bmi-over'; }
-  else               { cat = 'Obese';       cls = 'bmi-obese'; }
-  disp.innerHTML = `<span class="bmi-val">${bmi}</span><span class="bmi-cat ${cls}">${cat}</span>`;
-}
+    // ── BMI Calculator ────────────────────────────────────────────────────────────
+    function calcBMI() {
+      const h = parseFloat(document.getElementById('height').value);
+      const w = parseFloat(document.getElementById('weight').value);
+      const disp = document.getElementById('bmiDisplay');
+      if (!h || !w || h < 50 || w < 10) {
+        disp.innerHTML = '<span class="bmi-placeholder">Enter height &amp; weight</span>';
+        return;
+      }
+      const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+      let cat = '', cls = '';
+      if (bmi < 18.5) { cat = 'Underweight'; cls = 'bmi-under'; }
+      else if (bmi < 25) { cat = 'Normal'; cls = 'bmi-normal'; }
+      else if (bmi < 30) { cat = 'Overweight'; cls = 'bmi-over'; }
+      else { cat = 'Obese'; cls = 'bmi-obese'; }
+      disp.innerHTML = `<span class="bmi-val">${bmi}</span><span class="bmi-cat ${cls}">${cat}</span>`;
+    }
 
-// ── Input Validation ──────────────────────────────────────────────────────────
-function validateField(input, min, max) {
-  const v = parseFloat(input.value);
-  const hint = document.getElementById(input.id + '-hint');
-  if (!hint) return;
-  if (isNaN(v)) { hint.textContent = ''; return; }
-  if (v < min)      hint.textContent = `⚠ Below normal range (min ${min})`;
-  else if (v > max) hint.textContent = `⚠ Above normal range (max ${max})`;
-  else              hint.textContent = '';
-}
+    // ── Input Validation ──────────────────────────────────────────────────────────
+    function validateField(input, min, max) {
+      const v = parseFloat(input.value);
+      const hint = document.getElementById(input.id + '-hint');
+      if (!hint) return;
+      if (isNaN(v)) { hint.textContent = ''; return; }
+      if (v < min) hint.textContent = `Below normal range (min ${min})`;
+      else if (v > max) hint.textContent = `Above normal range (max ${max})`;
+      else hint.textContent = '';
+    }
 
-// ── Reset Form  
-function resetForm() {
-  document.getElementById('bmiDisplay').innerHTML =
-    '<span class="bmi-placeholder">Enter height &amp; weight</span>';
-  document.querySelectorAll('.field-hint').forEach(h => h.textContent = '');
-}
+    // ── Reset Form
+    function resetForm() {
+      document.getElementById('bmiDisplay').innerHTML =
+        '<span class="bmi-placeholder">Enter height &amp; weight</span>';
+      document.querySelectorAll('.field-hint').forEach(h => h.textContent = '');
+    }
 
-// ── Clear History  
-async function clearHistory() {
-  await fetch('/clear-history', { method: 'POST' });
-  location.reload();
-}
+    // ── Clear History
+    async function clearHistory() {
+      await fetch('/clear-history', { method: 'POST' });
+      location.reload();
+    }
 
-// ── On Load  
-window.addEventListener('DOMContentLoaded', () => {
-  const panel = document.getElementById('resultPanel');
-  if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  calcBMI();
-});
-</script>
+    // ── On Load
+    window.addEventListener('DOMContentLoaded', () => {
+      const panel = document.getElementById('resultPanel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      calcBMI();
+    });
+  </script>
 
 </body>
+
 </html>
